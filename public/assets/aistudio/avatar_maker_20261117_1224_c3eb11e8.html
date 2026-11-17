@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Avatar Maker – avatar tròn cho group chat</title>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--fg:#14213d;--muted:#5b6678;--line:#dde3ec;--brand:#0049ac;--brand-fg:#fff;--soft:#eaf1fb;--danger:#b42318;--ok:#067647;--panel-l:#e8ecf2;--panel-d:#0b1220}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1522;--card:#17202f;--fg:#e8edf5;--muted:#9aa7bb;--line:#2a3548;--brand:#4d8dff;--brand-fg:#06122b;--soft:#1d2b44;--danger:#ff8a80;--ok:#5ee3a1}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+h1{font-size:20px;margin:0}
+h1 small{display:block;font-size:13px;font-weight:400;color:var(--muted)}
+h2{font-size:15px;margin:0 0 10px}
+.top{max-width:1200px;margin:0 auto;padding:14px 16px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.app{max-width:1200px;margin:0 auto;padding:14px 16px 28px;display:grid;grid-template-columns:minmax(320px,460px) 1fr;gap:16px;align-items:start}
+.stage{position:sticky;top:12px;display:flex;flex-direction:column;gap:12px}
+.panel{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.pv-panel{border-radius:14px;padding:6%;background:var(--panel-l);transition:background .15s}
+.pv-panel.dark{background:var(--panel-d)}
+.av-wrap{position:relative;width:100%;aspect-ratio:1}
+.avatar{width:100%;height:100%;overflow:hidden;border-radius:50%;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.avatar.square{border-radius:0}
+.avatar svg{display:block;width:100%;height:100%}
+.guide{position:absolute;inset:10%;border:2px dashed #fff;border-radius:50%;mix-blend-mode:difference;pointer-events:none;display:none}
+.show-guide .guide{display:block}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row.sb{justify-content:space-between}
+.btn{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:8px 12px;border-radius:10px;font:inherit;cursor:pointer}
+.btn:hover{border-color:var(--brand)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-fg);font-weight:600}
+.btn.ghost{background:transparent}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{appearance:none;border:0;background:transparent;color:var(--fg);padding:6px 10px;font:inherit;cursor:pointer}
+.seg button.on{background:var(--brand);color:var(--brand-fg)}
+.chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer;user-select:none}
+.sizes{display:flex;gap:18px;align-items:flex-end;justify-content:center;padding:4px 0}
+.sizes figure{margin:0;text-align:center;font-size:12px;color:var(--muted)}
+.sizes .s{border-radius:50%;overflow:hidden;margin:0 auto 4px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.sizes svg{display:block;width:100%;height:100%}
+.tpls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tpl{appearance:none;border:2px solid var(--line);background:var(--card);color:var(--fg);border-radius:12px;padding:8px;cursor:pointer;font:inherit;text-align:center}
+.tpl.on{border-color:var(--brand);background:var(--soft)}
+.tpl .thumb{width:100%;aspect-ratio:1;border-radius:50%;overflow:hidden;margin-bottom:6px}
+.tpl .thumb svg{display:block;width:100%;height:100%}
+.tpl span{font-size:13px;font-weight:600}
+.presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:8px}
+.pre{appearance:none;border:2px solid transparent;background:transparent;color:var(--fg);padding:4px;border-radius:12px;cursor:pointer;font:inherit;text-align:center}
+.pre.on{border-color:var(--brand);background:var(--soft)}
+.pre .dot{width:46px;height:46px;border-radius:50%;margin:0 auto 4px;display:grid;place-items:center;font-weight:800;font-size:15px;border:4px solid}
+.pre .dot i{font-style:normal;border-bottom:3px solid;line-height:1.1}
+.pre small{font-size:11px;color:var(--muted);display:block;line-height:1.2}
+.colors{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.colors label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+input[type=color]{width:100%;height:36px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer}
+input[type=text],select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);font:inherit}
+.f{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin-top:10px;font-size:13px}
+.f span{color:var(--muted)}
+.f output{font-variant-numeric:tabular-nums}
+.f input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--brand)}
+.lbl{display:block;margin-top:10px;font-size:13px;color:var(--muted)}
+.lbl input,.lbl select{margin-top:4px}
+.icons{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
+.ic{appearance:none;border:2px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;height:44px;cursor:pointer;display:grid;place-items:center;font:inherit;font-size:11px}
+.ic.on{border-color:var(--brand);background:var(--soft)}
+.ic svg{width:24px;height:24px}
+.contrast{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:12px}
+.badge{padding:3px 8px;border-radius:999px;border:1px solid var(--line)}
+.badge.ok{color:var(--ok);border-color:var(--ok)}
+.badge.bad{color:var(--danger);border-color:var(--danger)}
+.note{font-size:12px;color:var(--muted);margin:8px 0 0}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 14px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;z-index:9}
+.toast.show{opacity:1}
+footer{max-width:1200px;margin:0 auto;padding:0 16px 24px;font-size:12px;color:var(--muted)}
+[hidden]{display:none!important}
+@media (max-width:900px){.app{grid-template-columns:1fr}.stage{position:static}.colors{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Avatar Maker <small>Tạo / sửa avatar tròn 1:1 cho group chat</small></h1>
+  <div class="row">
+    <button class="btn ghost" id="btnImport" title="Mở lại file SVG do app này xuất để sửa tiếp">Mở SVG để sửa</button>
+    <button class="btn ghost" id="btnReset">Đặt lại</button>
+    <input type="file" id="fileSvg" accept=".svg,image/svg+xml" hidden>
+  </div>
+</header>
+
+<main class="app">
+  <section class="stage">
+    <div class="pv-panel" id="pvPanel">
+      <div class="av-wrap" id="avWrap">
+        <div class="avatar" id="avatar"></div>
+        <div class="guide"></div>
+      </div>
+    </div>
+    <div class="row sb">
+      <div class="seg" data-seg="shape"><button data-val="round">Tròn</button><button data-val="square">Vuông</button></div>
+      <div class="seg" data-seg="panel"><button data-val="light">Nền sáng</button><button data-val="dark">Nền tối</button></div>
+      <label class="chk"><input type="checkbox" id="chkGuide"> Vùng an toàn</label>
+    </div>
+    <div class="card">
+      <div class="sizes" id="sizes"></div>
+      <p class="note" style="text-align:center">Kích thước thật khi hiển thị trong danh sách chat – kiểm tra chữ/icon còn đọc được không.</p>
+    </div>
+    <div class="card">
+      <div class="row sb">
+        <label class="chk">Cỡ xuất
+          <select id="expSize" style="width:auto"><option>512</option><option selected>1024</option><option>2048</option></select> px
+        </label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="btnPng">Tải PNG vuông</button>
+        <button class="btn" id="btnPngRound">PNG tròn (trong suốt)</button>
+        <button class="btn" id="btnSvg">Tải SVG</button>
+      </div>
+      <p class="note">PNG vuông dùng để tải lên Zalo / Messenger / Telegram (app tự cắt tròn). SVG có lưu cấu hình, mở lại bằng nút “Mở SVG để sửa”.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="card">
+      <h2>1. Mẫu (template)</h2>
+      <div class="tpls" id="tpls"></div>
+      <p class="note">Đổi template sẽ đặt lại cỡ chữ và icon về mặc định của template đó; màu và nội dung giữ nguyên.</p>
+    </div>
+
+    <div class="card">
+      <h2>2. Bộ màu</h2>
+      <div class="presets" id="presets"></div>
+      <div class="colors">
+        <label>Nền<input type="color" data-k="bg"></label>
+        <label>Viền<input type="color" data-k="ring"></label>
+        <label>Chữ chính<input type="color" data-k="text"></label>
+        <label>Nhấn / icon<input type="color" data-k="accent"></label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label class="chk"><input type="checkbox" data-k="grad"> Nền chuyển sắc</label>
+        <input type="color" data-k="bg2" style="width:56px">
+      </div>
+      <div id="f-grad"></div>
+      <div class="contrast" id="contrast"></div>
+    </div>
+
+    <div class="card">
+      <h2>3. Nội dung</h2>
+      <label class="lbl">Tiêu đề<input type="text" data-k="title" maxlength="24" autocomplete="off"></label>
+      <label class="lbl">Phụ đề (để trống nếu không cần)<input type="text" data-k="sub" maxlength="32" autocomplete="off"></label>
+      <div class="row" style="margin-top:10px">
+        <label class="chk"><input type="checkbox" data-k="upper"> IN HOA</label>
+        <label class="chk"><input type="checkbox" data-k="fit"> Tự co chữ vừa khung</label>
+      </div>
+      <label class="lbl">Font<select data-k="font" id="selFont"></select></label>
+      <div id="f-text"></div>
+      <p class="note">Font lấy từ hệ thống máy bạn. File PNG đã “đóng băng” hình nên gửi đi không bị đổi font; SVG mở trên máy khác có thể hiển thị font khác.</p>
+    </div>
+
+    <div class="card">
+      <h2>4. Icon</h2>
+      <div class="icons" id="icons"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="btnImg">Tải ảnh / logo lên…</button>
+        <label class="chk" id="boxCircle" hidden><input type="checkbox" data-k="imgCircle"> Cắt tròn ảnh</label>
+        <input type="file" id="fileImg" accept="image/*" hidden>
+      </div>
+      <div id="f-icon"></div>
+    </div>
+
+    <div class="card">
+      <h2>5. Viền &amp; bố cục</h2>
+      <label class="chk"><input type="checkbox" data-k="ringOn"> Hiện viền ngoài</label>
+      <div id="f-layout"></div>
+    </div>
+  </section>
+</main>
+<footer>Mọi xử lý chạy trong trình duyệt, không gửi dữ liệu đi đâu. Cấu hình được tự lưu trong trình duyệt này (localStorage).</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ============================ DỮ LIỆU ============================ */
+const KEY = 'avatarMaker.v1';
+
+const FONTS = {
+  wide:  {label:'Đậm rộng (Montserrat / Arial Black)', fam:"'Montserrat','Arial Black','Segoe UI Black','Helvetica Neue',Arial,sans-serif", w:900},
+  cond:  {label:'Gọn đứng (Anton / Impact)',           fam:"'Anton','Oswald','Impact','Arial Narrow',sans-serif", w:700},
+  sans:  {label:'Sans hiện đại (Segoe UI / Roboto)',   fam:"'Segoe UI','Roboto','Helvetica Neue',Arial,sans-serif", w:800},
+  serif: {label:'Serif (Georgia)',                     fam:"Georgia,'Times New Roman',serif", w:700},
+  round: {label:'Bo tròn (Nunito / Trebuchet)',        fam:"'Nunito','Varela Round','Trebuchet MS','Segoe UI',sans-serif", w:800}
+};
+
+const TEMPLATES = {A:'Biểu tượng + tên', B:'Chữ lớn', C:'Huy hiệu'};
+const TPL_DEF = {
+  A:{iconSize:300, titleSize:250, subSize:96,  iconOpacity:1,    track:0, iconDy:0, dy:0},
+  B:{iconSize:640, titleSize:300, subSize:100, iconOpacity:0.14, track:0, iconDy:0, dy:0},
+  C:{iconSize:330, titleSize:110, subSize:84,  iconOpacity:1,    track:6, iconDy:0, dy:0}
+};
+
+const PRESETS = [
+  {n:'Xanh KTYH',   bg:'#0049AC', ring:'#FFFFFF', text:'#FFFFFF', accent:'#5CE1E6'},
+  {n:'Xanh ngọc',   bg:'#0F766E', ring:'#FFFFFF', text:'#FFFFFF', accent:'#99F6E4'},
+  {n:'Navy – vàng', bg:'#0F2A4A', ring:'#F5C542', text:'#FFFFFF', accent:'#F5C542'},
+  {n:'Đỏ đô',       bg:'#7F1D1D', ring:'#FDE68A', text:'#FFF7ED', accent:'#FBBF24'},
+  {n:'Lá xanh',     bg:'#166534', ring:'#FFFFFF', text:'#FFFFFF', accent:'#BBF7D0'},
+  {n:'Tím',         bg:'#4C1D95', ring:'#FFFFFF', text:'#FFFFFF', accent:'#C4B5FD'},
+  {n:'Cam',         bg:'#C2410C', ring:'#FFFFFF', text:'#FFFFFF', accent:'#FED7AA'},
+  {n:'Hồng',        bg:'#BE185D', ring:'#FFFFFF', text:'#FFFFFF', accent:'#FBCFE8'},
+  {n:'Trắng – xanh',bg:'#FFFFFF', ring:'#0049AC', text:'#0049AC', accent:'#0EA5E9'},
+  {n:'Đen – cyan',  bg:'#111827', ring:'#22D3EE', text:'#FFFFFF', accent:'#22D3EE'},
+  {n:'Hoàng hôn',   bg:'#7C3AED', bg2:'#DB2777', grad:true, ring:'#FFFFFF', text:'#FFFFFF', accent:'#FDE68A'},
+  {n:'Đại dương',   bg:'#0049AC', bg2:'#06B6D4', grad:true, ring:'#FFFFFF', text:'#FFFFFF', accent:'#E0F2FE'}
+];
+
+/* Icon: viewBox 24x24 (kiểu Lucide, nét đường) + icon "Chat đôi" vẽ riêng */
+const L = (p) => ({vb:[0,0,24,24], p});
+const CHAT_FRONT = 'M440 232H528A60 60 0 0 1 588 292V312A60 60 0 0 1 528 372H470L398 412L420 372H440A60 60 0 0 1 380 312V292A60 60 0 0 1 440 232Z';
+const CHAT_BACK  = 'M584 272H496A60 60 0 0 0 436 332V352A60 60 0 0 0 496 412H554L626 452L604 412H584A60 60 0 0 0 644 352V332A60 60 0 0 0 584 272Z';
+const ICONS = {
+  chat2:{name:'Chat đôi', vb:[380,232,264,220]},
+  chat:{name:'Chat', ...L('<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>')},
+  msgsq:{name:'Tin nhắn', ...L('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>')},
+  heart:{name:'Nhịp tim', ...L('<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>')},
+  steth:{name:'Ống nghe', ...L('<path d="M11 2v2"/><path d="M5 2v2"/><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"/><path d="M8 15a6 6 0 0 0 12 0v-3"/><circle cx="20" cy="10" r="2"/>')},
+  cross:{name:'Chữ thập', ...L('<path d="M4 9a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h4a1 1 0 0 1 1 1v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-4a1 1 0 0 1 1-1h4a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-4a1 1 0 0 1-1-1V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4a1 1 0 0 1-1 1z"/>')},
+  pill:{name:'Viên thuốc', ...L('<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>')},
+  flask:{name:'Bình thí nghiệm', ...L('<path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/>')},
+  book:{name:'Sách', ...L('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>')},
+  cap:{name:'Mũ tốt nghiệp', ...L('<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>')},
+  users:{name:'Nhóm', ...L('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>')},
+  bulb:{name:'Ý tưởng', ...L('<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>')},
+  file:{name:'Tài liệu', ...L('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>')},
+  cal:{name:'Lịch', ...L('<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>')},
+  bell:{name:'Thông báo', ...L('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>')},
+  star:{name:'Sao', ...L('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>')},
+  code:{name:'Code', ...L('<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>')}
+};
+
+function defaults(){
+  return Object.assign({
+    tpl:'A', title:'NCKH', sub:'KHOA KTYH', upper:true, font:'wide', fit:true,
+    icon:'chat2', iconStroke:1.6,
+    bg:'#0049AC', bg2:'#06B6D4', grad:false, gradAngle:135,
+    ring:'#FFFFFF', text:'#FFFFFF', accent:'#5CE1E6',
+    ringOn:true, ringW:28, gap:1,
+    img:null, imgAspect:1, imgCircle:false
+  }, TPL_DEF.A);
+}
+
+/* ============================ TIỆN ÍCH ============================ */
+const r  = (n) => Math.round(n*100)/100;
+const r4 = (n) => Math.round(n*10000)/10000;
+const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function hex2rgb(h){ h=h.replace('#',''); if(h.length===3) h=h.split('').map(c=>c+c).join(''); const n=parseInt(h,16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+function lum(h){ const c=hex2rgb(h).map(v=>{v/=255; return v<=0.03928? v/12.92 : Math.pow((v+0.055)/1.055,2.4);}); return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]; }
+function ratio(a,b){ const A=lum(a), B=lum(b); return (Math.max(A,B)+0.05)/(Math.min(A,B)+0.05); }
+
+let _ctx=null;
+function getCtx(){ if(!_ctx) _ctx=document.createElement('canvas').getContext('2d'); return _ctx; }
+function measure(text,F,size,trackEm){
+  if(!text) return {w:0,asc:0,desc:0};
+  const c=getCtx(); c.font=`${F.w} ${size}px ${F.fam}`;
+  const m=c.measureText(text);
+  const asc=(m.actualBoundingBoxAscent>0)? m.actualBoundingBoxAscent : size*0.72;
+  const desc=Math.max(0, m.actualBoundingBoxDescent||0);
+  return {w:m.width+trackEm*size*text.length, asc, desc};
+}
+function fitSize(text,F,target,trackEm,maxW,fit){
+  let s=target; if(!fit||!text) return s;
+  for(let i=0;i<3;i++){ const m=measure(text,F,s,trackEm); if(m.w<=maxW) break; s=s*maxW/m.w*0.995; }
+  return s;
+}
+function textEl(txt,F,size,trackEm,x,y,fill){
+  if(!txt) return '';
+  const t=trackEm*size;
+  return `<text x="${r(x+t/2)}" y="${r(y)}" text-anchor="middle" font-family="${F.fam}" font-weight="${F.w}" font-size="${r(size)}" letter-spacing="${r(t)}" fill="${fill}">${esc(txt)}</text>`;
+}
+
+/* ============================ ICON ============================ */
+function iconDims(st){
+  if(st.icon==='none') return null;
+  if(st.icon==='upload'){
+    if(!st.img) return null;
+    const a=st.imgAspect||1, s=st.iconSize;
+    return a<=1? {w:s,h:s*a} : {w:s/a,h:s};
+  }
+  const ic=ICONS[st.icon]; if(!ic) return null;
+  const k=st.iconSize/Math.max(ic.vb[2],ic.vb[3]);
+  return {w:ic.vb[2]*k,h:ic.vb[3]*k};
+}
+function drawIcon(st,pre,cx,cy,color,opacity){
+  const d=iconDims(st); if(!d) return '';
+  const op = opacity<1 ? ` opacity="${opacity}"` : '';
+  if(st.icon==='upload'){
+    const id=pre+'ic';
+    const clip=st.imgCircle? `<clipPath id="${id}"><circle cx="${r(cx)}" cy="${r(cy)}" r="${r(Math.min(d.w,d.h)/2)}"/></clipPath>` : '';
+    return `${clip}<image xlink:href="${st.img}" x="${r(cx-d.w/2)}" y="${r(cy-d.h/2)}" width="${r(d.w)}" height="${r(d.h)}" preserveAspectRatio="xMidYMid ${st.imgCircle?'slice':'meet'}"${st.imgCircle?` clip-path="url(#${id})"`:''}${op}/>`;
+  }
+  const ic=ICONS[st.icon], vx=ic.vb[0], vy=ic.vb[1], vw=ic.vb[2], vh=ic.vb[3];
+  const m=Math.max(vw,vh), k=st.iconSize/m;
+  const tx=cx-(vw*k)/2-vx*k, ty=cy-(vh*k)/2-vy*k;
+  const sw=st.iconStroke*m/24;
+  let inner;
+  if(st.icon==='chat2'){
+    const mid=pre+'cm';
+    inner=`<defs><mask id="${mid}" maskUnits="userSpaceOnUse" x="360" y="210" width="320" height="270"><rect x="360" y="210" width="320" height="270" fill="#fff" stroke="none"/><path d="${CHAT_FRONT}" fill="#000" stroke="#000" stroke-width="${r(sw+18)}" stroke-linejoin="round"/></mask></defs>`
+      +`<path d="${CHAT_BACK}" mask="url(#${mid})"/><path d="${CHAT_FRONT}"/>`
+      +`<g fill="${color}" stroke="none"><circle cx="436" cy="302" r="15"/><circle cx="484" cy="302" r="15"/><circle cx="532" cy="302" r="15"/></g>`;
+  } else inner=ic.p;
+  return `<g transform="translate(${r(tx)} ${r(ty)}) scale(${r4(k)})" fill="none" stroke="${color}" stroke-width="${r(sw)}" stroke-linecap="round" stroke-linejoin="round"${op}>${inner}</g>`;
+}
+
+/* ============================ BỐ CỤC 3 TEMPLATE ============================ */
+function stackLayout(items,gapFn){
+  let cur=0, prev=null;
+  for(const it of items){
+    if(prev) cur+=gapFn(prev,it);
+    it.top=cur;
+    if(it.h!=null) cur+=it.h; else { it.base=cur+it.asc; cur=it.base+it.desc; }
+    prev=it;
+  }
+  return cur;
+}
+
+function layoutA(st,pre,F,T,S,defs,body){
+  const tr=st.track/100, g=st.gap;
+  const ts=fitSize(T,F,st.titleSize,tr,800,st.fit), ss=fitSize(S,F,st.subSize,tr,660,st.fit);
+  const mt=measure(T,F,ts,tr), ms=measure(S,F,ss,tr), dim=iconDims(st);
+  const items=[];
+  if(dim) items.push({k:'i',h:dim.h});
+  if(T) items.push({k:'t',asc:mt.asc,desc:mt.desc});
+  if(S) items.push({k:'s',asc:ms.asc,desc:ms.desc});
+  const H=stackLayout(items,(p,n)=>{
+    if(p.k==='i') return (n.k==='t'? 0.25*ts : 0.35*ss)*g;
+    return 0.45*ss*g;
+  });
+  const y0=512+st.dy-H/2;
+  for(const it of items){
+    if(it.k==='i') body.push(drawIcon(st,pre,512,y0+it.top+it.h/2+st.iconDy,st.accent,st.iconOpacity));
+    else if(it.k==='t') body.push(textEl(T,F,ts,tr,512,y0+it.base,st.text));
+    else body.push(textEl(S,F,ss,tr,512,y0+it.base,st.accent));
+  }
+}
+
+function layoutB(st,pre,F,T,S,defs,body){
+  const tr=st.track/100, g=st.gap;
+  const ts=fitSize(T,F,st.titleSize,tr,760,st.fit), ss=fitSize(S,F,st.subSize,tr,620,st.fit);
+  const mt=measure(T,F,ts,tr), ms=measure(S,F,ss,tr);
+  body.push(drawIcon(st,pre,512,512+st.iconDy,st.accent,st.iconOpacity));
+  const items=[];
+  if(T) items.push({k:'t',asc:mt.asc,desc:mt.desc});
+  if(T&&S) items.push({k:'b',h:Math.max(10,ts*0.05)});
+  if(S) items.push({k:'s',asc:ms.asc,desc:ms.desc});
+  const H=stackLayout(items,(p,n)=> p.k==="t"? 0.24*ts*g : (p.k==='b'? 0.3*ss*g : 0.3*ss*g));
+  const y0=512+st.dy-H/2;
+  for(const it of items){
+    if(it.k==='t') body.push(textEl(T,F,ts,tr,512,y0+it.base,st.text));
+    else if(it.k==='s') body.push(textEl(S,F,ss,tr,512,y0+it.base,st.accent));
+    else { const w=Math.min(mt.w*0.5,300); body.push(`<rect x="${r(512-w/2)}" y="${r(y0+it.top)}" width="${r(w)}" height="${r(it.h)}" rx="${r(it.h/2)}" fill="${st.accent}"/>`); }
+  }
+}
+
+function layoutC(st,pre,F,T,S,defs,body){
+  const tr=st.track/100, RO=432, PAD=34;
+  const rmGuess=RO-(Math.max(st.titleSize,st.subSize)*0.72+PAD*2)/2;
+  const ts=fitSize(T,F,st.titleSize,tr,2.4*rmGuess,st.fit), ss=fitSize(S,F,st.subSize,tr,2.4*rmGuess,st.fit);
+  const mt=measure(T,F,ts,tr), ms=measure(S,F,ss,tr);
+  const ascMax=Math.max(T?mt.asc:0,S?ms.asc:0), descMax=Math.max(T?mt.desc:0,S?ms.desc:0);
+  const band=Math.max(60,ascMax+descMax+PAD*2), RI=RO-band;
+  const ring=(rad)=>`M512 ${r(512-rad)}a${r(rad)} ${r(rad)} 0 1 0 0 ${r(2*rad)}a${r(rad)} ${r(rad)} 0 1 0 0 ${r(-2*rad)}z`;
+  body.push(`<path d="${ring(RO)} ${ring(RI)}" fill="#000" fill-opacity=".2" fill-rule="evenodd"/>`);
+  body.push(`<circle cx="512" cy="512" r="${r(RI)}" fill="none" stroke="${st.accent}" stroke-width="6" stroke-opacity=".9"/>`);
+  const rmid=(RI+RO)/2;
+  body.push(`<circle cx="${r(512-rmid)}" cy="512" r="11" fill="${st.accent}"/><circle cx="${r(512+rmid)}" cy="512" r="11" fill="${st.accent}"/>`);
+  const arcText=(txt,size,m,rb,top,fill,id)=>{
+    if(!txt) return;
+    const d= top? `M${r(512-rb)} 512A${r(rb)} ${r(rb)} 0 0 1 ${r(512+rb)} 512` : `M${r(512-rb)} 512A${r(rb)} ${r(rb)} 0 0 0 ${r(512+rb)} 512`;
+    defs.push(`<path id="${id}" d="${d}"/>`);
+    const t=tr*size, off=Math.PI*rb/2+t/2;
+    body.push(`<text font-family="${F.fam}" font-weight="${F.w}" font-size="${r(size)}" letter-spacing="${r(t)}" fill="${fill}"><textPath xlink:href="#${id}" startOffset="${r(off)}" text-anchor="middle">${esc(txt)}</textPath></text>`);
+  };
+  arcText(T,ts,mt,RI+PAD+descMax,true,st.text,pre+'pt');
+  arcText(S,ss,ms,RO-PAD-descMax,false,st.accent,pre+'pb');
+  const st2=Object.assign({},st,{iconSize: st.fit? Math.min(st.iconSize,RI*1.5) : st.iconSize});
+  body.push(drawIcon(st2,pre,512,512+st.iconDy,st.accent,st.iconOpacity));
+}
+
+function buildSVG(st,o){
+  o=o||{};
+  const pre=o.pre||'a', F=FONTS[st.font]||FONTS.wide;
+  const T=st.upper? st.title.toUpperCase() : st.title, S=st.upper? st.sub.toUpperCase() : st.sub;
+  const defs=[], body=[];
+  let fill=st.bg;
+  if(st.grad){
+    const a=st.gradAngle*Math.PI/180;
+    const x1=.5-.5*Math.sin(a), y1=.5+.5*Math.cos(a), x2=.5+.5*Math.sin(a), y2=.5-.5*Math.cos(a);
+    defs.push(`<linearGradient id="${pre}bg" x1="${r4(x1)}" y1="${r4(y1)}" x2="${r4(x2)}" y2="${r4(y2)}"><stop offset="0" stop-color="${st.bg}"/><stop offset="1" stop-color="${st.bg2}"/></linearGradient>`);
+    fill=`url(#${pre}bg)`;
+  }
+  body.push(`<rect width="1024" height="1024" fill="${fill}"/>`);
+  if(st.ringOn && st.ringW>0) body.push(`<circle cx="512" cy="512" r="470" fill="none" stroke="${st.ring}" stroke-width="${st.ringW}"/>`);
+  (st.tpl==='B'? layoutB : st.tpl==='C'? layoutC : layoutA)(st,pre,F,T,S,defs,body);
+  let meta='';
+  if(o.meta){
+    const cfg=Object.assign({},st); delete cfg.img; cfg.hasImg=!!st.img;
+    meta=`<title>${esc(st.title||'Avatar')}</title><metadata id="avatar-maker-config">${esc(JSON.stringify(cfg))}</metadata>`;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024"${o.size?` width="${o.size}" height="${o.size}"`:''}>${meta}<defs>${defs.join('')}</defs>${body.join('')}</svg>`;
+}
+
+/* ============================ ỨNG DỤNG ============================ */
+let state = null;
+const ui = {shape:'round', panel:'light', guide:false};
+
+function $(s){ return document.querySelector(s); }
+function $$(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
+
+function load(){
+  try{ const j=JSON.parse(localStorage.getItem(KEY)); if(j && typeof j==='object') return Object.assign(defaults(),j); }catch(e){}
+  return defaults();
+}
+let saveT=null;
+function save(){ clearTimeout(saveT); saveT=setTimeout(()=>{ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} },300); }
+
+let toastT=null;
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2600); }
+
+const RANGES = {
+  'f-grad':[['gradAngle','Góc chuyển sắc',0,360,5,v=>v+'°']],
+  'f-text':[['titleSize','Cỡ tiêu đề (tối đa)',60,420,1,v=>Math.round(v)],['subSize','Cỡ phụ đề (tối đa)',30,220,1,v=>Math.round(v)],['track','Giãn chữ',-3,30,1,v=>v+'%']],
+  'f-icon':[['iconSize','Kích thước icon',80,900,5,v=>Math.round(v)],['iconStroke','Độ dày nét icon',0.8,3.2,0.05,v=>(+v).toFixed(2)],['iconOpacity','Độ đậm icon',0.05,1,0.01,v=>Math.round(v*100)+'%'],['iconDy','Dịch icon theo chiều dọc',-250,250,1,v=>Math.round(v)]],
+  'f-layout':[['ringW','Độ dày viền',4,80,1,v=>Math.round(v)],['gap','Khoảng cách giữa các dòng',0.4,2.2,0.05,v=>'×'+(+v).toFixed(2)],['dy','Dịch cả cụm theo chiều dọc',-200,200,1,v=>Math.round(v)]]
+};
+function fmtMap(){ const m={}; Object.values(RANGES).forEach(a=>a.forEach(x=>m[x[0]]=x[5])); return m; }
+const FMT=fmtMap();
+
+function buildStatic(){
+  Object.keys(RANGES).forEach(id=>{
+    $('#'+id).innerHTML=RANGES[id].map(x=>`<label class="f"><span>${x[1]}</span><output data-o="${x[0]}"></output><input type="range" data-k="${x[0]}" min="${x[2]}" max="${x[3]}" step="${x[4]}"></label>`).join('');
+  });
+  $('#selFont').innerHTML=Object.keys(FONTS).map(k=>`<option value="${k}">${FONTS[k].label}</option>`).join('');
+  $('#tpls').innerHTML=Object.keys(TEMPLATES).map(k=>`<button class="tpl" data-tpl="${k}"><div class="thumb"></div><span>${TEMPLATES[k]}</span></button>`).join('');
+  $('#presets').innerHTML=PRESETS.map((p,i)=>{
+    const bg=p.grad?`linear-gradient(135deg,${p.bg},${p.bg2})`:p.bg;
+    return `<button class="pre" data-pre="${i}" title="${p.n}"><div class="dot" style="background:${bg};border-color:${p.ring};color:${p.text}"><i style="border-color:${p.accent}">Aa</i></div><small>${p.n}</small></button>`;
+  }).join('');
+  let ih='<button class="ic" data-icon="none" title="Không icon">∅</button>';
+  Object.keys(ICONS).forEach(k=>{
+    const pk=buildIconPreview(k);
+    ih+=`<button class="ic" data-icon="${k}" title="${ICONS[k].name}">${pk}</button>`;
+  });
+  ih+='<button class="ic" data-icon="upload" id="icUpload" title="Ảnh đã tải lên" hidden>Ảnh</button>';
+  $('#icons').innerHTML=ih;
+  $('#sizes').innerHTML=[96,48,32].map(n=>`<figure><div class="s" style="width:${n}px;height:${n}px" data-size="${n}"></div>${n} px</figure>`).join('');
+}
+function buildIconPreview(k){
+  const fake={icon:k,iconSize:20,iconStroke:1.8,img:null};
+  return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${drawIcon(fake,'pk'+k,12,12,'currentColor',1)}</svg>`;
+}
+
+function presetOn(p){
+  const eq=(a,b)=>String(a).toLowerCase()===String(b).toLowerCase();
+  return eq(p.bg,state.bg)&&eq(p.ring,state.ring)&&eq(p.text,state.text)&&eq(p.accent,state.accent)&&(!!p.grad)===!!state.grad&&(!p.grad||eq(p.bg2,state.bg2));
+}
+
+function syncInputs(){
+  $$('[data-k]').forEach(el=>{
+    const k=el.dataset.k, v=state[k];
+    if(el.type==='checkbox') el.checked=!!v;
+    else if(document.activeElement!==el) el.value=v;
+  });
+  $$('[data-o]').forEach(el=>{ const k=el.dataset.o; el.textContent=FMT[k]?FMT[k](state[k]):state[k]; });
+  $$('[data-seg]').forEach(g=>{ const key=g.dataset.seg; Array.prototype.forEach.call(g.querySelectorAll('button'),b=>b.classList.toggle('on',b.dataset.val===ui[key])); });
+  $('#chkGuide').checked=ui.guide;
+  $('#icUpload').hidden=!state.img;
+  $('#boxCircle').hidden=!(state.img && state.icon==='upload');
+  $$('.ic').forEach(b=>b.classList.toggle('on',b.dataset.icon===state.icon));
+  $$('.pre').forEach(b=>b.classList.toggle('on',presetOn(PRESETS[+b.dataset.pre])));
+  $$('.tpl').forEach(b=>b.classList.toggle('on',b.dataset.tpl===state.tpl));
+  $('#f-grad').hidden=!state.grad;
+  $('[data-k="bg2"]').hidden=!state.grad;
+}
+
+function renderContrast(){
+  const bgs=state.grad?[state.bg,state.bg2]:[state.bg];
+  const worst=(c)=>Math.min.apply(null,bgs.map(b=>ratio(c,b)));
+  const mk=(label,c)=>{ const v=worst(c); const cls=v>=4.5?'ok':(v>=3?'':'bad'); const mark=v>=4.5?'✓':(v>=3?'~':'✗ khó đọc'); return `<span class="badge ${cls}">${label}: ${v.toFixed(1)}:1 ${mark}</span>`; };
+  $('#contrast').innerHTML=mk('Chữ chính / nền',state.text)+mk('Nhấn / nền',state.accent)+(state.ringOn?mk('Viền / nền',state.ring):'');
+}
+
+function render(){
+  $('#avatar').innerHTML=buildSVG(state,{pre:'m'});
+  $('#avatar').classList.toggle('square',ui.shape==='square');
+  $('#pvPanel').classList.toggle('dark',ui.panel==='dark');
+  $('#avWrap').classList.toggle('show-guide',ui.guide);
+  $$('.tpl').forEach(b=>{
+    const k=b.dataset.tpl;
+    const s=(k===state.tpl)? state : Object.assign({},state,TPL_DEF[k],{tpl:k});
+    b.querySelector('.thumb').innerHTML=buildSVG(s,{pre:'t'+k});
+  });
+  $$('[data-size]').forEach(el=>{ el.innerHTML=buildSVG(state,{pre:'s'+el.dataset.size}); });
+  syncInputs();
+  renderContrast();
+}
+let raf=0;
+function update(){ cancelAnimationFrame(raf); raf=requestAnimationFrame(render); save(); }
+
+/* ---------- Xuất file ---------- */
+function stamp(){ const d=new Date(Date.now()+7*3600e3), p=n=>String(n).padStart(2,'0'); return `${d.getUTCFullYear()}${p(d.getUTCMonth()+1)}${p(d.getUTCDate())}_${p(d.getUTCHours())}${p(d.getUTCMinutes())}`; }
+function slug(s){ return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'avatar'; }
+function download(blob,name){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500); }
+function fileBase(){ return `avatar_${slug(state.title)}_${stamp()}`; }
+
+async function makePNG(size,round){
+  const svg=buildSVG(state,{pre:'x',size:1024});
+  const img=new Image();
+  await new Promise((ok,bad)=>{ img.onload=ok; img.onerror=bad; img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); });
+  const c=document.createElement('canvas'); c.width=c.height=size;
+  const x=c.getContext('2d');
+  if(round){ x.beginPath(); x.arc(size/2,size/2,size/2,0,Math.PI*2); x.clip(); }
+  x.drawImage(img,0,0,size,size);
+  return new Promise(res=>c.toBlob(res,'image/png'));
+}
+async function exportPNG(round){
+  try{
+    const size=parseInt($('#expSize').value,10)||1024;
+    const blob=await makePNG(size,round);
+    download(blob,fileBase()+(round?'_tron':'')+'.png');
+    toast('Đã tải PNG '+(round?'tròn ':'vuông ')+size+' px');
+  }catch(e){ toast('Không xuất được PNG: '+(e&&e.message?e.message:'lỗi không rõ')); }
+}
+function exportSVG(){
+  const svg='<?xml version="1.0" encoding="UTF-8"?>\n'+buildSVG(state,{pre:'e',meta:true,size:1024});
+  download(new Blob([svg],{type:'image/svg+xml'}),fileBase()+'.svg');
+  toast('Đã tải SVG');
+}
+
+/* ---------- Nhập SVG / ảnh ---------- */
+function importSVG(text){
+  try{
+    const doc=new DOMParser().parseFromString(text,'image/svg+xml');
+    const m=doc.getElementById('avatar-maker-config')||doc.querySelector('metadata');
+    if(!m) return toast('File SVG này không do Avatar Maker tạo ra nên không đọc được cấu hình.');
+    const cfg=JSON.parse(m.textContent);
+    const im=doc.querySelector('image');
+    const href=im?(im.getAttribute('href')||im.getAttributeNS('http://www.w3.org/1999/xlink','href')):null;
+    state=Object.assign(defaults(),cfg);
+    state.img=(cfg.hasImg&&href)?href:null; delete state.hasImg;
+    update(); toast('Đã mở cấu hình từ SVG');
+  }catch(e){ toast('Không đọc được file SVG này.'); }
+}
+function onImage(file){
+  if(!file) return;
+  const fr=new FileReader();
+  fr.onload=()=>{
+    const url=fr.result, im=new Image();
+    im.onload=()=>{
+      let w=im.naturalWidth||1, h=im.naturalHeight||1;
+      if(file.type==='image/svg+xml'){ state.img=url; }
+      else{
+        const sc=Math.min(1,640/Math.max(w,h)), c=document.createElement('canvas');
+        c.width=Math.max(1,Math.round(w*sc)); c.height=Math.max(1,Math.round(h*sc));
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+        state.img=c.toDataURL('image/png'); w=c.width; h=c.height;
+      }
+      state.imgAspect=h/w; state.icon='upload';
+      update();
+    };
+    im.onerror=()=>toast('Không đọc được ảnh này.');
+    im.src=url;
+  };
+  fr.readAsDataURL(file);
+}
+
+/* ---------- Gắn sự kiện ---------- */
+function bind(){
+  $$('[data-k]').forEach(el=>{
+    const k=el.dataset.k;
+    const h=()=>{
+      let v;
+      if(el.type==='checkbox') v=el.checked;
+      else if(el.type==='range') v=parseFloat(el.value);
+      else v=el.value;
+      state[k]=v; update();
+    };
+    el.addEventListener('input',h); el.addEventListener('change',h);
+  });
+  $('#tpls').addEventListener('click',e=>{ const b=e.target.closest('[data-tpl]'); if(!b) return; const k=b.dataset.tpl; state.tpl=k; Object.assign(state,TPL_DEF[k]); update(); });
+  $('#presets').addEventListener('click',e=>{ const b=e.target.closest('[data-pre]'); if(!b) return; const p=PRESETS[+b.dataset.pre];
+    Object.assign(state,{bg:p.bg,ring:p.ring,text:p.text,accent:p.accent,grad:!!p.grad}); if(p.bg2) state.bg2=p.bg2; update(); });
+  $('#icons').addEventListener('click',e=>{ const b=e.target.closest('[data-icon]'); if(!b) return; state.icon=b.dataset.icon; update(); });
+  $$('[data-seg]').forEach(g=>g.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; ui[g.dataset.seg]=b.dataset.val; render(); }));
+  $('#chkGuide').addEventListener('change',e=>{ ui.guide=e.target.checked; render(); });
+  $('#btnPng').addEventListener('click',()=>exportPNG(false));
+  $('#btnPngRound').addEventListener('click',()=>exportPNG(true));
+  $('#btnSvg').addEventListener('click',exportSVG);
+  $('#btnReset').addEventListener('click',()=>{ state=defaults(); update(); toast('Đã đặt lại về mặc định'); });
+  $('#btnImport').addEventListener('click',()=>$('#fileSvg').click());
+  $('#fileSvg').addEventListener('change',e=>{ const f=e.target.files[0]; if(f){ const fr=new FileReader(); fr.onload=()=>importSVG(String(fr.result)); fr.readAsText(f); } e.target.value=''; });
+  $('#btnImg').addEventListener('click',()=>$('#fileImg').click());
+  $('#fileImg').addEventListener('change',e=>{ onImage(e.target.files[0]); e.target.value=''; });
+}
+
+function init(){
+  state=load();
+  buildStatic(); bind(); render();
+}
+if(typeof window!=='undefined' && !window.__NO_INIT__) init();
+</script>
+</body>
+</html>

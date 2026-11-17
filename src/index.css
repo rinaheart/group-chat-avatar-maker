@@ -1,0 +1,61 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --bg: #f4f6fa;
+    --card: #ffffff;
+    --fg: #14213d;
+    --muted: #525f73;
+    --line: #dde3ec;
+    --brand: #0049ac;
+    --brand-fg: #ffffff;
+    --soft: #eaf1fb;
+    --panel-l: #e8ecf2;
+    --panel-d: #0b1220;
+    --font-sans: 'Plus Jakarta Sans', 'DM Sans', system-ui, -apple-system, sans-serif;
+    --font-body: 'DM Sans', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-serif: 'Fraunces', Georgia, serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  .dark {
+    --bg: #0e1522;
+    --card: #17202f;
+    --fg: #e8edf5;
+    --muted: #9aa7bb;
+    --line: #2a3548;
+    --brand: #4d8dff;
+    --brand-fg: #06122b;
+    --soft: #1d2b44;
+    --panel-l: #1a2436;
+    --panel-d: #080d17;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-body);
+    background-color: var(--bg);
+    color: var(--fg);
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.font-display {
+  font-family: var(--font-sans);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom thin range input styling for minimalist controls */
+input[type="range"] {
+  accent-color: var(--brand);
+}

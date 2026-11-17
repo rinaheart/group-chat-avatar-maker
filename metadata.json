@@ -1,0 +1,6 @@
+{
+  "name": "Avatar Maker – Group Chat",
+  "description": "Tạo avatar tròn phong cách tối giản cho group chat, hỗ trợ tùy chỉnh chữ, biểu tượng, họa tiết và xuất file PNG hoặc SVG sắc nét.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
