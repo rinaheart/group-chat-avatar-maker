@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Circle, Moon, Pin, PinOff, Square, Sun } from 'lucide-react';
+import { Circle, Maximize2, Moon, Pin, PinOff, Square, Sun } from 'lucide-react';
 import type {
   AvatarState,
   ClipboardCopyKind,
@@ -8,6 +8,7 @@ import type {
 } from '../types/avatar';
 import { buildSVG } from '../utils/svgEngine';
 import { ExportCard } from './ExportCard';
+import { PreviewFullscreenModal } from './PreviewFullscreenModal';
 
 interface PreviewStageProps {
   state: AvatarState;
@@ -46,6 +47,7 @@ export function PreviewStage({
 }: PreviewStageProps) {
   const miniCardRef = useRef<HTMLDivElement>(null);
   const [isMiniScrolledPast, setIsMiniScrolledPast] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const el = miniCardRef.current;
@@ -61,6 +63,10 @@ export function PreviewStage({
   }, []);
 
   const mainSvg = useMemo(() => buildSVG(state, { pre: 'm' }), [state]);
+  const fullscreenSvg = useMemo(
+    () => (isFullscreen ? buildSVG(state, { pre: 'fs' }) : ''),
+    [isFullscreen, state]
+  );
   const miniSvgs = useMemo(
     () =>
       PREVIEW_SIZES.map((px) => ({
@@ -78,7 +84,7 @@ export function PreviewStage({
     <section
       id="section-preview"
       aria-label="Xem trước và xuất file"
-      className="flex scroll-mt-20 flex-col gap-3 lg:sticky lg:top-3 lg:scroll-mt-4"
+      className="flex scroll-mt-20 flex-col gap-2.5 lg:sticky lg:top-3 lg:scroll-mt-4 lg:gap-3"
     >
       {/* Mobile pinned mini-preview strip when scrolled past the preview card */}
       {isMobilePinned && isMiniScrolledPast && (
@@ -86,7 +92,7 @@ export function PreviewStage({
           data-testid="mobile-pinned-preview"
           role="region"
           aria-label="Thanh xem trước thu gọn đang ghim"
-          className="fixed inset-x-0 top-0 z-40 border-b border-[var(--line)] bg-[var(--card)]/92 px-3 py-2 shadow-sm backdrop-blur-md lg:hidden"
+          className="fixed inset-x-0 top-0 z-40 border-b border-[var(--line)] bg-[var(--card)]/92 px-3 py-1 shadow-sm backdrop-blur-md lg:hidden"
         >
           <div className="relative mx-auto flex max-w-[600px] items-center justify-center">
             <div className="flex items-end justify-center gap-3">
@@ -115,13 +121,45 @@ export function PreviewStage({
 
       {/* Main 1:1 Avatar Preview Stage */}
       <div
+        ref={miniCardRef}
         data-testid="preview-panel"
         data-panel={ui.panel}
-        className={`rounded-2xl p-[5%] transition-colors duration-150 lg:p-[6%] ${
+        className={`relative rounded-2xl p-3 transition-colors duration-150 sm:p-4 lg:p-[6%] ${
           ui.panel === 'dark' ? 'bg-[var(--panel-d)]' : 'bg-[var(--panel-l)]'
         }`}
       >
-        <div className="relative mx-auto aspect-square w-full max-w-[232px] sm:max-w-[320px] lg:max-w-none">
+        {/* Top-left Mobile Pin Toggle Button (symmetrical with Fullscreen button on top-right) */}
+        <button
+          type="button"
+          onClick={onToggleMobilePin}
+          aria-pressed={isMobilePinned}
+          aria-label={
+            isMobilePinned ? 'Đang ghim vùng xem trước khi cuộn' : 'Ghim vùng xem trước khi cuộn'
+          }
+          title={isMobilePinned ? 'Đang ghim khi cuộn (chạm để tắt)' : 'Ghim xem trước khi cuộn'}
+          data-testid="mobile-pin-toggle-btn"
+          className={`absolute top-2.5 left-2.5 z-10 inline-flex h-11 w-11 items-center justify-center rounded-xl border shadow-xs backdrop-blur-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)] lg:hidden cursor-pointer ${
+            isMobilePinned
+              ? 'border-[var(--brand)] bg-[var(--soft)]/95 text-[var(--brand)]'
+              : 'border-[var(--line)] bg-[var(--card)]/90 text-[var(--fg)] hover:border-[var(--brand)]'
+          }`}
+        >
+          <Pin className="h-4 w-4" aria-hidden="true" />
+        </button>
+
+        {/* Top-right Fullscreen Expand Button */}
+        <button
+          type="button"
+          onClick={() => setIsFullscreen(true)}
+          aria-label="Mở rộng xem trước avatar toàn màn hình"
+          title="Mở rộng xem chi tiết"
+          data-testid="preview-fullscreen-btn"
+          className="absolute top-2.5 right-2.5 z-10 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--card)]/90 text-[var(--fg)] shadow-xs backdrop-blur-xs transition-colors hover:border-[var(--brand)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)] cursor-pointer"
+        >
+          <Maximize2 className="h-4 w-4" aria-hidden="true" />
+        </button>
+
+        <div className="relative mx-auto aspect-square w-full max-w-[156px] sm:max-w-[248px] lg:max-w-none">
           <div
             data-testid="avatar-preview"
             data-shape={ui.shape}
@@ -142,18 +180,18 @@ export function PreviewStage({
         </div>
       </div>
 
-      {/* Stage Preview Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      {/* Stage Preview Controls — 1 single row on 390px mobile with 0px overflow */}
+      <div className="flex items-center justify-between gap-1 sm:gap-2">
         <div
           role="group"
           aria-label="Hình dạng xem trước"
-          className="inline-flex overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--card)]"
+          className="inline-flex shrink-0 overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--card)]"
         >
           <button
             type="button"
             onClick={() => onUiChange({ shape: 'round' })}
             aria-pressed={ui.shape === 'round'}
-            className={`inline-flex min-h-[44px] items-center gap-1.5 px-3 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer sm:text-sm ${
+            className={`inline-flex min-h-[44px] items-center gap-1 px-2 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer sm:gap-1.5 sm:px-3 sm:text-sm ${
               ui.shape === 'round'
                 ? 'bg-[var(--brand)] text-[var(--brand-fg)]'
                 : 'text-[var(--fg)] hover:bg-[var(--soft)]'
@@ -166,7 +204,7 @@ export function PreviewStage({
             type="button"
             onClick={() => onUiChange({ shape: 'square' })}
             aria-pressed={ui.shape === 'square'}
-            className={`inline-flex min-h-[44px] items-center gap-1.5 px-3 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer sm:text-sm ${
+            className={`inline-flex min-h-[44px] items-center gap-1 px-2 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer sm:gap-1.5 sm:px-3 sm:text-sm ${
               ui.shape === 'square'
                 ? 'bg-[var(--brand)] text-[var(--brand-fg)]'
                 : 'text-[var(--fg)] hover:bg-[var(--soft)]'
@@ -180,13 +218,13 @@ export function PreviewStage({
         <div
           role="group"
           aria-label="Màu nền xem trước"
-          className="inline-flex overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--card)]"
+          className="inline-flex shrink-0 overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--card)]"
         >
           <button
             type="button"
             onClick={() => onUiChange({ panel: 'light' })}
             aria-pressed={ui.panel === 'light'}
-            className={`inline-flex min-h-[44px] items-center gap-1.5 px-2.5 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer sm:px-3 sm:text-sm ${
+            className={`inline-flex min-h-[44px] items-center gap-1 px-2 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer sm:gap-1.5 sm:px-3 sm:text-sm ${
               ui.panel === 'light'
                 ? 'bg-[var(--brand)] text-[var(--brand-fg)]'
                 : 'text-[var(--fg)] hover:bg-[var(--soft)]'
@@ -199,7 +237,7 @@ export function PreviewStage({
             type="button"
             onClick={() => onUiChange({ panel: 'dark' })}
             aria-pressed={ui.panel === 'dark'}
-            className={`inline-flex min-h-[44px] items-center gap-1.5 px-2.5 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer sm:px-3 sm:text-sm ${
+            className={`inline-flex min-h-[44px] items-center gap-1 px-2 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer sm:gap-1.5 sm:px-3 sm:text-sm ${
               ui.panel === 'dark'
                 ? 'bg-[var(--brand)] text-[var(--brand-fg)]'
                 : 'text-[var(--fg)] hover:bg-[var(--soft)]'
@@ -210,52 +248,27 @@ export function PreviewStage({
           </button>
         </div>
 
-        <label className="inline-flex min-h-[44px] cursor-pointer select-none items-center gap-2 rounded-xl px-1.5 text-xs text-[var(--fg)] sm:text-sm">
+        <label className="inline-flex min-h-[44px] shrink-0 cursor-pointer select-none items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--card)] px-2 text-xs font-medium text-[var(--fg)] sm:px-2.5 sm:text-sm">
           <input
             type="checkbox"
             checked={ui.guide}
             onChange={(e) => onUiChange({ guide: e.target.checked })}
             className="h-4 w-4 accent-[var(--brand)]"
           />
-          <span className="whitespace-nowrap">Vùng an toàn</span>
+          <span className="whitespace-nowrap sm:hidden">An toàn</span>
+          <span className="hidden whitespace-nowrap sm:inline">Vùng an toàn</span>
         </label>
       </div>
 
       {/* Real Chat List Size Check (Messenger / Zalo / Telegram sizes) */}
-      <div
-        ref={miniCardRef}
-        className="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4"
-      >
-        <div className="mb-2 flex items-center justify-between gap-2 lg:hidden">
-          <span className="text-xs font-medium text-[var(--muted)]">Xem nhanh cỡ chat</span>
-          <button
-            type="button"
-            onClick={onToggleMobilePin}
-            aria-pressed={isMobilePinned}
-            aria-label={
-              isMobilePinned ? 'Đang ghim vùng xem trước khi cuộn' : 'Ghim vùng xem trước khi cuộn'
-            }
-            className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border px-3 text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
-              isMobilePinned
-                ? 'border-[var(--brand)] bg-[var(--soft)] text-[var(--fg)]'
-                : 'border-[var(--line)] bg-[var(--card)] text-[var(--fg)] hover:border-[var(--brand)]'
-            }`}
-          >
-            <Pin
-              className={`h-3.5 w-3.5 ${isMobilePinned ? 'text-[var(--brand)]' : ''}`}
-              aria-hidden="true"
-            />
-            <span>{isMobilePinned ? 'Đang ghim khi cuộn' : 'Ghim xem trước'}</span>
-          </button>
-        </div>
-
-        <div className="flex items-end justify-center gap-4 py-1 sm:gap-5">
+      <div className="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-2.5 sm:p-4">
+        <div className="flex items-end justify-center gap-4 py-0.5 sm:gap-5">
           {miniSvgs.map(({ px, svg }) => (
-            <figure key={px} className="m-0 text-center text-xs text-[var(--muted)]">
+            <figure key={px} className="m-0 text-center text-[11px] text-[var(--muted)] sm:text-xs">
               <div
                 aria-hidden="true"
                 style={{ width: `${px}px`, height: `${px}px` }}
-                className="mx-auto mb-1.5 overflow-hidden rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.28)] [&_svg]:block [&_svg]:h-full [&_svg]:w-full"
+                className="mx-auto mb-1 overflow-hidden rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.28)] [&_svg]:block [&_svg]:h-full [&_svg]:w-full"
                 dangerouslySetInnerHTML={{ __html: svg }}
               />
               <figcaption className="tabular-nums">{px} px</figcaption>
@@ -263,28 +276,28 @@ export function PreviewStage({
           ))}
         </div>
 
-        <div className="mt-3 flex items-center gap-3 border-t border-[var(--line)] pt-3">
+        <div className="mt-2 flex items-center gap-2.5 border-t border-[var(--line)] pt-2 sm:mt-3 sm:gap-3 sm:pt-3">
           <div
             aria-hidden="true"
-            className="h-10 w-10 shrink-0 overflow-hidden rounded-full shadow-xs [&_svg]:block [&_svg]:h-full [&_svg]:w-full"
+            className="h-9 w-9 shrink-0 overflow-hidden rounded-full shadow-xs sm:h-10 sm:w-10 [&_svg]:block [&_svg]:h-full [&_svg]:w-full"
             dangerouslySetInnerHTML={{ __html: chatPreviewAvatar }}
           />
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline justify-between gap-2">
-              <span className="truncate text-sm font-semibold text-[var(--fg)]">
+              <span className="truncate text-xs font-semibold text-[var(--fg)] sm:text-sm">
                 {displayGroupName}
                 {displaySub ? ` · ${displaySub}` : ''}
               </span>
               <span className="shrink-0 text-[11px] tabular-nums text-[var(--muted)]">12:30</span>
             </div>
-            <p className="truncate text-xs text-[var(--muted)]">
+            <p className="truncate text-[11px] text-[var(--muted)] sm:text-xs">
               Xem thử hiển thị thực tế 40 px trong danh sách chat
             </p>
           </div>
         </div>
       </div>
 
-      {/* Desktop sticky export card (mobile shows ExportCard cleanly after customization controls) */}
+      {/* Desktop sticky export card (mobile shows ExportCard via the Studio Dock 'Xuất' tab or 'Tất cả' mode) */}
       <div className="hidden lg:block">
         <ExportCard
           shape={ui.shape}
@@ -299,6 +312,15 @@ export function PreviewStage({
           onCopyDataUrl={onCopyDataUrl}
         />
       </div>
+
+      <PreviewFullscreenModal
+        isOpen={isFullscreen}
+        svg={fullscreenSvg}
+        groupName={displayGroupName}
+        ui={ui}
+        onUiChange={onUiChange}
+        onClose={() => setIsFullscreen(false)}
+      />
     </section>
   );
 }

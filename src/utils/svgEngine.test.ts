@@ -25,8 +25,11 @@ import { resolveThemedColors } from './themeEngine';
 import { createRandomizedState } from './randomizeAvatar';
 import {
   MOBILE_OPTION_TABS,
+  MOBILE_STUDIO_DOCK_GROUPS,
   getAdjacentOptionTab,
+  getSubTabsForTab,
   pickActiveNavSection,
+  resolveDockGroupForTab,
 } from './sectionNav';
 
 test('createDefaultState returns expected default NCKH config with Lucide messages-square', () => {
@@ -275,6 +278,26 @@ test('MOBILE_OPTION_TABS covers 7 sections + all mode, adjacent stepping, and pi
   assert.equal(getAdjacentOptionTab('layout', 1), null);
   assert.equal(getAdjacentOptionTab('layout', -1)?.id, 'icon');
   assert.equal(getAdjacentOptionTab('all', 1), null);
+  assert.equal(getAdjacentOptionTab('export', 1), null);
+
+  assert.equal(MOBILE_STUDIO_DOCK_GROUPS.length, 6);
+  assert.equal(resolveDockGroupForTab('template')?.id, 'structure');
+  assert.equal(resolveDockGroupForTab('layout')?.id, 'structure');
+  assert.equal(resolveDockGroupForTab('theme')?.id, 'style');
+  assert.equal(resolveDockGroupForTab('patterns')?.id, 'style');
+  assert.equal(resolveDockGroupForTab('color')?.id, 'color');
+  assert.equal(resolveDockGroupForTab('export')?.id, 'export');
+  assert.equal(resolveDockGroupForTab('all'), null);
+
+  assert.deepEqual(
+    getSubTabsForTab('template').map((t) => t.id),
+    ['template', 'layout']
+  );
+  assert.deepEqual(
+    getSubTabsForTab('theme').map((t) => t.id),
+    ['theme', 'patterns']
+  );
+  assert.equal(getSubTabsForTab('color').length, 0);
 
   const measurements = [
     { id: 'section-preview' as const, top: -420, height: 600 },

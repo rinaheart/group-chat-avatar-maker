@@ -307,7 +307,7 @@ export default function App() {
         onReset={handleReset}
       />
 
-      <main className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-4 px-4 pt-3.5 pb-24 sm:px-6 lg:grid-cols-[minmax(320px,460px)_1fr] lg:pb-8">
+      <main className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-3 px-4 pt-2.5 pb-6 sm:px-6 lg:grid-cols-[minmax(320px,460px)_1fr] lg:gap-4 lg:pt-3.5 lg:pb-8">
         <PreviewStage
           state={state}
           ui={ui}
@@ -400,39 +400,15 @@ export default function App() {
             <LayoutCard state={state} onPatch={patchState} />
           </div>
 
-          {/* Mobile sequential prev/next step bar in tabbed mode */}
-          {activeMobileTab !== 'all' && (
-            <div className="flex items-center justify-between gap-2 lg:hidden">
-              {prevTab ? (
-                <button
-                  type="button"
-                  onClick={() => setActiveMobileTab(prevTab.id)}
-                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--card)] px-3 text-xs font-medium text-[var(--fg)] transition-colors hover:border-[var(--brand)] cursor-pointer"
-                >
-                  <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                  <span>{prevTab.shortLabel}</span>
-                </button>
-              ) : (
-                <span />
-              )}
-
-              {nextTab ? (
-                <button
-                  type="button"
-                  onClick={() => setActiveMobileTab(nextTab.id)}
-                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--card)] px-3 text-xs font-semibold text-[var(--fg)] transition-colors hover:border-[var(--brand)] cursor-pointer"
-                >
-                  <span>Tiếp: {nextTab.shortLabel}</span>
-                  <ChevronRight className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
-                </button>
-              ) : (
-                <span />
-              )}
-            </div>
-          )}
-
-          {/* Mobile Export Card placed below customization options to avoid pushing controls down */}
-          <div className="lg:hidden">
+          {/* Mobile Export panel when 'export' or 'all' is active */}
+          <div
+            id="section-export"
+            className={
+              activeMobileTab === 'all' || activeMobileTab === 'export'
+                ? 'block lg:hidden'
+                : 'hidden'
+            }
+          >
             <ExportCard
               shape={ui.shape}
               exportSize={exportSize}
@@ -446,10 +422,89 @@ export default function App() {
               onCopyDataUrl={handleCopyDataUrl}
             />
           </div>
+
+          {/* Mobile sequential prev/next step bar + instant quick-export bar when editing individual options */}
+          {activeMobileTab !== 'all' && activeMobileTab !== 'export' && (
+            <div className="flex flex-col gap-2.5 lg:hidden">
+              <div className="flex items-center justify-between gap-2">
+                {prevTab ? (
+                  <button
+                    type="button"
+                    onClick={() => setActiveMobileTab(prevTab.id)}
+                    className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--card)] px-3 text-xs font-medium text-[var(--fg)] transition-colors hover:border-[var(--brand)] cursor-pointer"
+                  >
+                    <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                    <span>{prevTab.shortLabel}</span>
+                  </button>
+                ) : (
+                  <span />
+                )}
+
+                {nextTab ? (
+                  <button
+                    type="button"
+                    onClick={() => setActiveMobileTab(nextTab.id)}
+                    className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--card)] px-3 text-xs font-semibold text-[var(--fg)] transition-colors hover:border-[var(--brand)] cursor-pointer"
+                  >
+                    <span>Tiếp: {nextTab.shortLabel}</span>
+                    <ChevronRight className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setActiveMobileTab('export')}
+                    className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-[var(--brand)] bg-[var(--soft)] px-3 text-xs font-semibold text-[var(--fg)] transition-colors hover:border-[var(--brand)] cursor-pointer"
+                  >
+                    <span>Tiếp: Xuất file</span>
+                    <ChevronRight className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+
+              {/* Inline quick-export strip so users can export or copy anytime without leaving their current tool */}
+              <div className="flex items-center gap-2 rounded-2xl border border-[var(--line)] bg-[var(--card)] p-2">
+                <button
+                  type="button"
+                  disabled={isExporting}
+                  onClick={() => handleExportPng(false)}
+                  className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--brand)] px-3 text-xs font-semibold text-[var(--brand-fg)] transition-opacity hover:opacity-95 disabled:opacity-60 whitespace-nowrap cursor-pointer sm:text-sm"
+                >
+                  <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>Tải PNG ({exportSize}px)</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={isCopying || isExporting}
+                  onClick={handleCopyImage}
+                  aria-label="Sao chép ảnh PNG vào clipboard"
+                  className={`inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-medium transition-colors disabled:opacity-60 whitespace-nowrap cursor-pointer sm:text-sm ${
+                    copiedKind === 'blob'
+                      ? 'border-[var(--brand)] bg-[var(--soft)] text-[var(--fg)]'
+                      : 'border-[var(--line)] bg-[var(--card)] text-[var(--fg)] hover:border-[var(--brand)]'
+                  }`}
+                >
+                  {copiedKind === 'blob' ? (
+                    <Check className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
+                  ) : (
+                    <Copy className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  <span>{copiedKind === 'blob' ? 'Đã chép' : 'Sao chép'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportSvg}
+                  className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--card)] px-3 text-xs font-medium text-[var(--fg)] transition-colors hover:border-[var(--brand)] whitespace-nowrap cursor-pointer sm:text-sm"
+                >
+                  <FileCode2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>SVG</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
-      <footer className="mx-auto flex max-w-[1200px] flex-col items-center gap-1 px-4 pb-24 text-center text-[11px] text-[var(--muted)] sm:px-6 lg:pb-8">
+      <footer className="mx-auto flex max-w-[1200px] flex-col items-center gap-1 px-4 pb-20 text-center text-[11px] text-[var(--muted)] sm:px-6 lg:pb-8">
         <p className="m-0 leading-relaxed">
           Xử lý hoàn toàn trên trình duyệt · Tự lưu cục bộ (localStorage)
         </p>
@@ -460,47 +515,6 @@ export default function App() {
           {APP_VERSION} (GMT+7)
         </p>
       </footer>
-
-      {/* Mobile-first sticky thumb-zone export bar (<1024px, height 64px <= 8% viewport) */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--line)] bg-[var(--card)]/90 px-4 py-2.5 backdrop-blur-md lg:hidden">
-        <div className="mx-auto flex max-w-[600px] items-center gap-2">
-          <button
-            type="button"
-            disabled={isExporting}
-            onClick={() => handleExportPng(false)}
-            className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--brand)] px-3 text-sm font-semibold text-[var(--brand-fg)] transition-opacity hover:opacity-95 disabled:opacity-60 whitespace-nowrap cursor-pointer"
-          >
-            <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span>Tải PNG ({exportSize}px)</span>
-          </button>
-          <button
-            type="button"
-            disabled={isCopying || isExporting}
-            onClick={handleCopyImage}
-            aria-label="Sao chép ảnh PNG vào clipboard"
-            className={`inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3 text-sm font-medium transition-colors disabled:opacity-60 whitespace-nowrap cursor-pointer ${
-              copiedKind === 'blob'
-                ? 'border-[var(--brand)] bg-[var(--soft)] text-[var(--fg)]'
-                : 'border-[var(--line)] bg-[var(--card)] text-[var(--fg)] hover:border-[var(--brand)]'
-            }`}
-          >
-            {copiedKind === 'blob' ? (
-              <Check className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
-            ) : (
-              <Copy className="h-4 w-4" aria-hidden="true" />
-            )}
-            <span>{copiedKind === 'blob' ? 'Đã chép' : 'Sao chép'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleExportSvg}
-            className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--card)] px-3 text-sm font-medium text-[var(--fg)] transition-colors hover:border-[var(--brand)] whitespace-nowrap cursor-pointer"
-          >
-            <FileCode2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span>SVG</span>
-          </button>
-        </div>
-      </div>
 
       <Toast message={toastMessage} />
     </div>
