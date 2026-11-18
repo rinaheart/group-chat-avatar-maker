@@ -13,8 +13,8 @@
     --soft: #eaf1fb;
     --panel-l: #e8ecf2;
     --panel-d: #0b1220;
-    --font-sans: 'Plus Jakarta Sans', 'DM Sans', system-ui, -apple-system, sans-serif;
-    --font-body: 'DM Sans', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+    --font-body: 'Be Vietnam Pro', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     --font-serif: 'Fraunces', Georgia, serif;
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   }
@@ -37,6 +37,12 @@
     font-family: var(--font-body);
     background-color: var(--bg);
     color: var(--fg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 
   body {

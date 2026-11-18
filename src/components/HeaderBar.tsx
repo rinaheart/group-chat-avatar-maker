@@ -39,15 +39,17 @@ export function HeaderBar({
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex w-full items-center justify-between gap-1.5 sm:w-auto sm:justify-start sm:gap-2">
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           title="Mở lại file SVG do ứng dụng này xuất để sửa tiếp"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[var(--line)] bg-transparent px-3.5 py-2 text-sm font-medium text-[var(--fg)] transition-colors hover:border-[var(--brand)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)] whitespace-nowrap shrink-0 cursor-pointer"
+          aria-label="Mở SVG để sửa"
+          className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-[var(--line)] bg-transparent px-2.5 py-2 text-xs font-medium text-[var(--fg)] transition-colors hover:border-[var(--brand)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)] whitespace-nowrap shrink-0 cursor-pointer sm:gap-2 sm:px-3.5 sm:text-sm"
         >
-          <FolderOpen className="h-4 w-4" aria-hidden="true" />
-          <span>Mở SVG để sửa</span>
+          <FolderOpen className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" aria-hidden="true" />
+          <span className="sm:hidden">Mở SVG</span>
+          <span className="hidden sm:inline">Mở SVG để sửa</span>
         </button>
 
         <button
@@ -55,18 +57,19 @@ export function HeaderBar({
           onClick={onRandomize}
           title="Tạo ngẫu nhiên mẫu, màu, chủ đề, họa tiết, icon và cặp font"
           aria-label="Ngẫu nhiên hóa thiết kế avatar"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[var(--brand)]/40 bg-[var(--soft)] px-3.5 py-2 text-sm font-semibold text-[var(--fg)] transition-colors hover:border-[var(--brand)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)] whitespace-nowrap shrink-0 cursor-pointer"
+          className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-[var(--brand)]/40 bg-[var(--soft)] px-2.5 py-2 text-xs font-semibold text-[var(--fg)] transition-colors hover:border-[var(--brand)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)] whitespace-nowrap shrink-0 cursor-pointer sm:gap-2 sm:px-3.5 sm:text-sm"
         >
-          <Dices className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
+          <Dices className="h-3.5 w-3.5 shrink-0 text-[var(--brand)] sm:h-4 sm:w-4" aria-hidden="true" />
           <span>Ngẫu nhiên</span>
         </button>
 
         <button
           type="button"
           onClick={onReset}
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[var(--line)] bg-transparent px-3.5 py-2 text-sm font-medium text-[var(--fg)] transition-colors hover:border-[var(--brand)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)] whitespace-nowrap shrink-0 cursor-pointer"
+          aria-label="Đặt lại mặc định"
+          className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-[var(--line)] bg-transparent px-2.5 py-2 text-xs font-medium text-[var(--fg)] transition-colors hover:border-[var(--brand)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)] whitespace-nowrap shrink-0 cursor-pointer sm:gap-2 sm:px-3.5 sm:text-sm"
         >
-          <RotateCcw className="h-4 w-4" aria-hidden="true" />
+          <RotateCcw className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" aria-hidden="true" />
           <span>Đặt lại</span>
         </button>
 

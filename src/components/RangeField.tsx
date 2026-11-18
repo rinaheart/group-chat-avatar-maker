@@ -38,7 +38,7 @@ export function RangeField({
         step={step}
         value={value}
         onChange={(e) => onChange(Number.parseFloat(e.target.value))}
-        className="mt-1.5 h-6 w-full cursor-pointer accent-[var(--brand)]"
+        className="mt-1 h-10 w-full cursor-pointer accent-[var(--brand)]"
       />
     </div>
   );

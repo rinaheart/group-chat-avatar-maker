@@ -67,7 +67,7 @@ export function IconCard({ state, onPatch, onUploadImage }: IconCardProps) {
                 type="button"
                 aria-pressed={active}
                 onClick={() => setCategory(cat.id)}
-                className={`min-h-[38px] rounded-lg px-2.5 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                className={`min-h-[44px] rounded-lg px-3 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                   active
                     ? 'bg-[var(--card)] text-[var(--fg)] shadow-xs'
                     : 'text-[var(--muted)] hover:text-[var(--fg)]'
@@ -97,7 +97,7 @@ export function IconCard({ state, onPatch, onUploadImage }: IconCardProps) {
               type="button"
               onClick={() => setQuery('')}
               aria-label="Xóa từ khóa tìm icon"
-              className="absolute top-1/2 right-1.5 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-[var(--muted)] hover:text-[var(--fg)] cursor-pointer"
+              className="absolute top-1/2 right-1 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg text-[var(--muted)] hover:text-[var(--fg)] cursor-pointer"
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </button>

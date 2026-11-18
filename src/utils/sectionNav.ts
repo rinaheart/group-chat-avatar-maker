@@ -8,6 +8,16 @@ export type NavSectionId =
   | 'section-icon'
   | 'section-layout';
 
+export type MobileOptionTabId =
+  | 'template'
+  | 'theme'
+  | 'color'
+  | 'patterns'
+  | 'content'
+  | 'icon'
+  | 'layout'
+  | 'all';
+
 export type QuickNavIconKey =
   | 'eye'
   | 'shapes'
@@ -16,65 +26,97 @@ export type QuickNavIconKey =
   | 'grid'
   | 'type'
   | 'smile'
-  | 'sliders';
+  | 'sliders'
+  | 'layers';
 
-export interface QuickNavItem {
-  id: NavSectionId;
+export interface OptionTabItem {
+  id: MobileOptionTabId;
+  sectionId: NavSectionId | null;
   shortLabel: string;
-  ariaLabel: string;
+  fullLabel: string;
   icon: QuickNavIconKey;
 }
 
-export const MOBILE_QUICK_NAV_ITEMS: readonly QuickNavItem[] = [
+export const MOBILE_OPTION_TABS: readonly OptionTabItem[] = [
   {
-    id: 'section-preview',
-    shortLabel: 'Xem',
-    ariaLabel: 'Đi tới vùng xem trước',
-    icon: 'eye',
-  },
-  {
-    id: 'section-template',
+    id: 'template',
+    sectionId: 'section-template',
     shortLabel: 'Mẫu',
-    ariaLabel: 'Đi tới 1. Mẫu (Template)',
+    fullLabel: '1. Mẫu (Template)',
     icon: 'shapes',
   },
   {
-    id: 'section-theme',
+    id: 'theme',
+    sectionId: 'section-theme',
     shortLabel: 'Chủ đề',
-    ariaLabel: 'Đi tới 2. Chủ đề phong cách',
+    fullLabel: '2. Chủ đề phong cách',
     icon: 'sparkles',
   },
   {
-    id: 'section-color',
+    id: 'color',
+    sectionId: 'section-color',
     shortLabel: 'Màu',
-    ariaLabel: 'Đi tới 3. Bộ màu chi tiết',
+    fullLabel: '3. Bộ màu chi tiết',
     icon: 'palette',
   },
   {
-    id: 'section-patterns',
-    shortLabel: 'Nền',
-    ariaLabel: 'Đi tới 4. Họa tiết nền',
+    id: 'patterns',
+    sectionId: 'section-patterns',
+    shortLabel: 'Họa tiết',
+    fullLabel: '4. Họa tiết nền',
     icon: 'grid',
   },
   {
-    id: 'section-content',
-    shortLabel: 'Chữ',
-    ariaLabel: 'Đi tới 5. Nội dung',
+    id: 'content',
+    sectionId: 'section-content',
+    shortLabel: 'Chữ & Font',
+    fullLabel: '5. Nội dung & Font',
     icon: 'type',
   },
   {
-    id: 'section-icon',
+    id: 'icon',
+    sectionId: 'section-icon',
     shortLabel: 'Icon',
-    ariaLabel: 'Đi tới 6. Icon (Lucide)',
+    fullLabel: '6. Icon (Lucide)',
     icon: 'smile',
   },
   {
-    id: 'section-layout',
+    id: 'layout',
+    sectionId: 'section-layout',
     shortLabel: 'Bố cục',
-    ariaLabel: 'Đi tới 7. Viền & bố cục',
+    fullLabel: '7. Viền & bố cục',
     icon: 'sliders',
   },
+  {
+    id: 'all',
+    sectionId: null,
+    shortLabel: 'Tất cả',
+    fullLabel: 'Xem tất cả 7 mục',
+    icon: 'layers',
+  },
 ];
+
+const ORDERED_PANEL_TABS: readonly Exclude<MobileOptionTabId, 'all'>[] = [
+  'template',
+  'theme',
+  'color',
+  'patterns',
+  'content',
+  'icon',
+  'layout',
+];
+
+export function getAdjacentOptionTab(
+  current: MobileOptionTabId,
+  direction: -1 | 1
+): OptionTabItem | null {
+  if (current === 'all') return null;
+  const idx = ORDERED_PANEL_TABS.indexOf(current);
+  if (idx === -1) return null;
+  const targetId = ORDERED_PANEL_TABS[idx + direction];
+  if (!targetId) return null;
+  return MOBILE_OPTION_TABS.find((t) => t.id === targetId) ?? null;
+}
 
 export interface SectionMeasurement {
   id: NavSectionId;
@@ -82,11 +124,6 @@ export interface SectionMeasurement {
   height: number;
 }
 
-/**
- * Resolves the active navigation section from current viewport-relative bounding boxes.
- * Picks the last section whose top has crossed or sits near the anchor line (anchorY),
- * or falls back to the last section when scrolled to the bottom of the page.
- */
 export function pickActiveNavSection(
   measurements: readonly SectionMeasurement[],
   options: {

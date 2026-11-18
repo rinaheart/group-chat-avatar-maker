@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { Ban, Check, Grid2x2 } from 'lucide-react';
+import { Ban, Check } from 'lucide-react';
 import { AVATAR_PATTERNS, normalizePatternId } from '../data/avatarConstants';
 import type { AvatarPatternId, AvatarState } from '../types/avatar';
 import { relativeLuminance } from '../utils/colorContrast';
@@ -109,9 +109,8 @@ export function PatternsCard({ state, onPatch }: PatternsCardProps) {
       className="scroll-mt-24 rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 lg:scroll-mt-4"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 font-display text-[15px] font-semibold text-[var(--fg)]">
-          <Grid2x2 className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
-          <span>4. Họa tiết nền (Patterns)</span>
+        <h2 className="font-display text-[15px] font-semibold text-[var(--fg)]">
+          4. Họa tiết nền (Patterns)
         </h2>
         <span className="text-xs text-[var(--muted)]">
           {activePattern === 'none' ? 'Đang tắt' : activeOption?.name}

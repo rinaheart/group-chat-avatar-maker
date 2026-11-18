@@ -50,8 +50,8 @@ export function ColorCard({ state, onPatch }: ColorCardProps) {
           3. Bộ màu chi tiết
         </h2>
         {activeThemeId !== 'classic' && (
-          <span className="rounded-lg bg-[var(--soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--fg)]">
-            Áp chồng: {activeThemeName}
+          <span className="text-xs text-[var(--muted)]">
+            Áp chồng · {activeThemeName}
           </span>
         )}
       </div>
@@ -167,7 +167,7 @@ export function ColorCard({ state, onPatch }: ColorCardProps) {
               value={state.bg2}
               onChange={(e) => onPatch({ bg2: e.target.value })}
               aria-label="Màu nền chuyển sắc thứ 2"
-              className="h-10 w-14 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--card)] p-1"
+              className="h-11 w-14 cursor-pointer rounded-xl border border-[var(--line)] bg-[var(--card)] p-1"
             />
           </label>
         )}

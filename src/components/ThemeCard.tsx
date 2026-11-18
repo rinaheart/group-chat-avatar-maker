@@ -1,4 +1,4 @@
-import { Check, Sparkles } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { AVATAR_THEMES, normalizeThemeId } from '../data/avatarConstants';
 import type { AvatarState, AvatarThemeId } from '../types/avatar';
 import { resolveThemedColors } from '../utils/themeEngine';
@@ -17,9 +17,8 @@ export function ThemeCard({ state, onSelectTheme }: ThemeCardProps) {
       className="scroll-mt-24 rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 lg:scroll-mt-4"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 font-display text-[15px] font-semibold text-[var(--fg)]">
-          <Sparkles className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
-          <span>2. Chủ đề phong cách (Theme)</span>
+        <h2 className="font-display text-[15px] font-semibold text-[var(--fg)]">
+          2. Chủ đề phong cách (Theme)
         </h2>
         <span className="text-xs text-[var(--muted)]">Áp chồng được với bộ màu</span>
       </div>

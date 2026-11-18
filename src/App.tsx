@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Check, Copy, Download, FileCode2 } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Copy, Download, FileCode2 } from 'lucide-react';
 import { ColorCard } from './components/ColorCard';
 import { ContentCard } from './components/ContentCard';
+import { ExportCard } from './components/ExportCard';
 import { HeaderBar } from './components/HeaderBar';
 import { IconCard } from './components/IconCard';
 import { LayoutCard } from './components/LayoutCard';
-import { MobileQuickNav } from './components/MobileQuickNav';
+import { MobileOptionTabs } from './components/MobileOptionTabs';
 import { PatternsCard } from './components/PatternsCard';
 import { PreviewStage } from './components/PreviewStage';
 import { TemplateCard } from './components/TemplateCard';
@@ -45,6 +46,7 @@ import {
   parseImportedSVG,
 } from './utils/svgEngine';
 import { createRandomizedState } from './utils/randomizeAvatar';
+import { getAdjacentOptionTab, type MobileOptionTabId } from './utils/sectionNav';
 
 const APP_BUILD_MS = Number(import.meta.env.VITE_APP_BUILD_MS) || Date.now();
 const APP_VERSION = formatAppVersion(APP_BUILD_MS);
@@ -86,6 +88,7 @@ export default function App() {
   const [isCopying, setIsCopying] = useState(false);
   const [copiedKind, setCopiedKind] = useState<ClipboardCopyKind | null>(null);
   const [isMobilePinned, setIsMobilePinned] = useState(true);
+  const [activeMobileTab, setActiveMobileTab] = useState<MobileOptionTabId>('template');
   const [isDarkTheme, setIsDarkTheme] = useState<boolean>(getInitialDarkTheme);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimerRef = useRef<number | null>(null);
@@ -284,6 +287,16 @@ export default function App() {
     [exportSize, isCopying, markCopied, showToast, state, ui.shape]
   );
 
+  const prevTab = getAdjacentOptionTab(activeMobileTab, -1);
+  const nextTab = getAdjacentOptionTab(activeMobileTab, 1);
+
+  const handleJumpToPreview = useCallback(() => {
+    document.getElementById('section-preview')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
       <HeaderBar
@@ -294,7 +307,7 @@ export default function App() {
         onReset={handleReset}
       />
 
-      <main className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-4 pl-4 pr-[58px] pt-3.5 pb-24 sm:pl-6 lg:grid-cols-[minmax(320px,460px)_1fr] lg:px-6 lg:pb-8">
+      <main className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-4 px-4 pt-3.5 pb-24 sm:px-6 lg:grid-cols-[minmax(320px,460px)_1fr] lg:pb-8">
         <PreviewStage
           state={state}
           ui={ui}
@@ -313,21 +326,130 @@ export default function App() {
         />
 
         <div className="flex min-w-0 flex-col gap-3">
-          <TemplateCard state={state} onSelectTemplate={handleSelectTemplate} />
-          <ThemeCard state={state} onSelectTheme={handleSelectTheme} />
-          <ColorCard state={state} onPatch={patchState} />
-          <PatternsCard state={state} onPatch={patchState} />
-          <ContentCard state={state} onPatch={patchState} />
-          <IconCard
-            state={state}
-            onPatch={patchState}
-            onUploadImage={handleUploadImage}
+          <MobileOptionTabs
+            activeTab={activeMobileTab}
+            onSelectTab={setActiveMobileTab}
+            onJumpToPreview={handleJumpToPreview}
           />
-          <LayoutCard state={state} onPatch={patchState} />
+
+          <div
+            className={
+              activeMobileTab === 'all' || activeMobileTab === 'template'
+                ? 'block'
+                : 'hidden lg:block'
+            }
+          >
+            <TemplateCard state={state} onSelectTemplate={handleSelectTemplate} />
+          </div>
+          <div
+            className={
+              activeMobileTab === 'all' || activeMobileTab === 'theme'
+                ? 'block'
+                : 'hidden lg:block'
+            }
+          >
+            <ThemeCard state={state} onSelectTheme={handleSelectTheme} />
+          </div>
+          <div
+            className={
+              activeMobileTab === 'all' || activeMobileTab === 'color'
+                ? 'block'
+                : 'hidden lg:block'
+            }
+          >
+            <ColorCard state={state} onPatch={patchState} />
+          </div>
+          <div
+            className={
+              activeMobileTab === 'all' || activeMobileTab === 'patterns'
+                ? 'block'
+                : 'hidden lg:block'
+            }
+          >
+            <PatternsCard state={state} onPatch={patchState} />
+          </div>
+          <div
+            className={
+              activeMobileTab === 'all' || activeMobileTab === 'content'
+                ? 'block'
+                : 'hidden lg:block'
+            }
+          >
+            <ContentCard state={state} onPatch={patchState} />
+          </div>
+          <div
+            className={
+              activeMobileTab === 'all' || activeMobileTab === 'icon'
+                ? 'block'
+                : 'hidden lg:block'
+            }
+          >
+            <IconCard
+              state={state}
+              onPatch={patchState}
+              onUploadImage={handleUploadImage}
+            />
+          </div>
+          <div
+            className={
+              activeMobileTab === 'all' || activeMobileTab === 'layout'
+                ? 'block'
+                : 'hidden lg:block'
+            }
+          >
+            <LayoutCard state={state} onPatch={patchState} />
+          </div>
+
+          {/* Mobile sequential prev/next step bar in tabbed mode */}
+          {activeMobileTab !== 'all' && (
+            <div className="flex items-center justify-between gap-2 lg:hidden">
+              {prevTab ? (
+                <button
+                  type="button"
+                  onClick={() => setActiveMobileTab(prevTab.id)}
+                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--card)] px-3 text-xs font-medium text-[var(--fg)] transition-colors hover:border-[var(--brand)] cursor-pointer"
+                >
+                  <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                  <span>{prevTab.shortLabel}</span>
+                </button>
+              ) : (
+                <span />
+              )}
+
+              {nextTab ? (
+                <button
+                  type="button"
+                  onClick={() => setActiveMobileTab(nextTab.id)}
+                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--card)] px-3 text-xs font-semibold text-[var(--fg)] transition-colors hover:border-[var(--brand)] cursor-pointer"
+                >
+                  <span>Tiếp: {nextTab.shortLabel}</span>
+                  <ChevronRight className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
+                </button>
+              ) : (
+                <span />
+              )}
+            </div>
+          )}
+
+          {/* Mobile Export Card placed below customization options to avoid pushing controls down */}
+          <div className="lg:hidden">
+            <ExportCard
+              shape={ui.shape}
+              exportSize={exportSize}
+              isExporting={isExporting}
+              isCopying={isCopying}
+              copiedKind={copiedKind}
+              onExportSizeChange={setExportSize}
+              onExportPng={handleExportPng}
+              onExportSvg={handleExportSvg}
+              onCopyImage={handleCopyImage}
+              onCopyDataUrl={handleCopyDataUrl}
+            />
+          </div>
         </div>
       </main>
 
-      <footer className="mx-auto flex max-w-[1200px] flex-col items-center gap-1 pl-4 pr-[58px] pb-24 text-center text-[11px] text-[var(--muted)] sm:pl-6 lg:px-6 lg:pb-8">
+      <footer className="mx-auto flex max-w-[1200px] flex-col items-center gap-1 px-4 pb-24 text-center text-[11px] text-[var(--muted)] sm:px-6 lg:pb-8">
         <p className="m-0 leading-relaxed">
           Xử lý hoàn toàn trên trình duyệt · Tự lưu cục bộ (localStorage)
         </p>
@@ -338,8 +460,6 @@ export default function App() {
           {APP_VERSION} (GMT+7)
         </p>
       </footer>
-
-      <MobileQuickNav />
 
       {/* Mobile-first sticky thumb-zone export bar (<1024px, height 64px <= 8% viewport) */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--line)] bg-[var(--card)]/90 px-4 py-2.5 backdrop-blur-md lg:hidden">

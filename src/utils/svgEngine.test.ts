@@ -23,7 +23,11 @@ import {
 } from './svgEngine';
 import { resolveThemedColors } from './themeEngine';
 import { createRandomizedState } from './randomizeAvatar';
-import { MOBILE_QUICK_NAV_ITEMS, pickActiveNavSection } from './sectionNav';
+import {
+  MOBILE_OPTION_TABS,
+  getAdjacentOptionTab,
+  pickActiveNavSection,
+} from './sectionNav';
 
 test('createDefaultState returns expected default NCKH config with Lucide messages-square', () => {
   const def = createDefaultState();
@@ -259,12 +263,18 @@ test('createRandomizedState randomizes style/palette/pattern/icon/font while pre
   assert.ok(!svg.includes('NaN') && !svg.includes('undefined'));
 });
 
-test('MOBILE_QUICK_NAV_ITEMS covers preview + 7 sections and pickActiveNavSection resolves scroll position', () => {
-  assert.equal(MOBILE_QUICK_NAV_ITEMS.length, 8);
-  const ids = new Set(MOBILE_QUICK_NAV_ITEMS.map((item) => item.id));
+test('MOBILE_OPTION_TABS covers 7 sections + all mode, adjacent stepping, and pickActiveNavSection', () => {
+  assert.equal(MOBILE_OPTION_TABS.length, 8);
+  const ids = new Set(MOBILE_OPTION_TABS.map((item) => item.id));
   assert.equal(ids.size, 8);
-  assert.ok(ids.has('section-preview'));
-  assert.ok(ids.has('section-layout'));
+  assert.ok(ids.has('template'));
+  assert.ok(ids.has('all'));
+
+  assert.equal(getAdjacentOptionTab('template', -1), null);
+  assert.equal(getAdjacentOptionTab('template', 1)?.id, 'theme');
+  assert.equal(getAdjacentOptionTab('layout', 1), null);
+  assert.equal(getAdjacentOptionTab('layout', -1)?.id, 'icon');
+  assert.equal(getAdjacentOptionTab('all', 1), null);
 
   const measurements = [
     { id: 'section-preview' as const, top: -420, height: 600 },
